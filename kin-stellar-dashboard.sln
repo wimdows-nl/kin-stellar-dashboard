@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kin-stellar-dashboard", "kin-stellar-dashboard\kin-stellar-dashboard.csproj", "{6FD6FEDD-766E-4E45-A847-F4863AC9E92B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kin_stellar_dashboard", "kin-stellar-dashboard\kin_stellar_dashboard.csproj", "{6FD6FEDD-766E-4E45-A847-F4863AC9E92B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

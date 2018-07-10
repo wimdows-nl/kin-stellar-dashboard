@@ -1,12 +1,12 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 
 namespace kin_stellar_dashboard
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Startup.RunAsync(args).Wait();
         }
     }
 }
