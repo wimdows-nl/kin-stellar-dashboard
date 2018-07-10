@@ -6,8 +6,7 @@ using kin_stellar_dashboard.Services;
 using kin_stellar_dashboard.Services.Impl;
 using log4net;
 using log4net.Config;
-using log4net.Core;
-using log4net.Repository.Hierarchy;
+using log4net.Repository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,12 +16,14 @@ namespace kin_stellar_dashboard
     {
         private static readonly ILog Logger;
         private readonly IConfigurationRoot Configuration;
+
         static Startup()
         {
-            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+            ILoggerRepository logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("kin_stellar_dashboard.dll.config"));
             Logger = LogManager.GetLogger(typeof(Startup));
         }
+
         private Startup(string[] args)
         {
             var builder = new ConfigurationBuilder();
@@ -39,8 +40,9 @@ namespace kin_stellar_dashboard
             }
             catch (Exception e)
             {
-               Logger.Error(e.Message, e);
+                Logger.Error(e.Message, e);
                 Console.ReadLine();
+
                 throw;
             }
         }
@@ -49,7 +51,7 @@ namespace kin_stellar_dashboard
         {
             var services = new ServiceCollection();
             ConfigureServices(services);
-            
+
             ServiceProvider provider = services.BuildServiceProvider();
 
             await provider.GetRequiredService<StartupService>().StartAsync();
@@ -59,7 +61,7 @@ namespace kin_stellar_dashboard
         private void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddSingleton(Configuration) 
+                .AddSingleton(Configuration)
                 .AddSingleton<IDatabaseService, DatabaseService>()
                 .AddSingleton<IStellarService, StellarService>()
                 .AddSingleton<StartupService>();

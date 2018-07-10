@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using kin_stellar_dashboard.Models;
 using log4net;
@@ -15,22 +13,22 @@ namespace kin_stellar_dashboard.Services.Impl
     {
         private readonly IDatabaseService _databaseService;
         private readonly ILog _logger;
+        private EventSource _eventSource;
+        private OperationsRequestBuilder _operationsRequestBuilder;
+        private readonly Server _server;
 
-        private static Server _server;
-        private static EventSource _eventSource;
-        private static OperationsRequestBuilder _operationsRequestBuilder;
         public StellarService(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
             _logger = LogManager.GetLogger(typeof(StellarService));
+
+            _server = new Server("http://horizon-kin-ecosystem.kininfrastructure.com");
+            Network.UsePublicNetwork();
         }
 
         public async Task StartAsync()
         {
-            _server = new Server("http://horizon-kin-ecosystem.kininfrastructure.com");
-            Network.UsePublicNetwork();
-
-            var cursor = await GetCurrentCursorFromDatabase("operations");
+            string cursor = await GetCurrentCursorFromDatabase("operations");
             _logger.Debug($"{nameof(cursor)}: {cursor}");
 
             await DeleteLastCursorId(cursor);
@@ -39,7 +37,7 @@ namespace kin_stellar_dashboard.Services.Impl
 
             _eventSource = _operationsRequestBuilder.Stream((sender, response) =>
             {
-                var operationsRequestBuilder = (OperationsRequestBuilder)sender;
+                var operationsRequestBuilder = (OperationsRequestBuilder) sender;
                 OperationRecordModel operationRecord = HandleOperationResponse(response);
 
                 if (!string.IsNullOrEmpty(response.PagingToken))
@@ -60,16 +58,20 @@ namespace kin_stellar_dashboard.Services.Impl
         private OperationRecordModel HandleOperationResponse(OperationResponse response)
         {
             OperationRecordModel operationRecord = null;
+
             if (response is PaymentOperationResponse paymentOperationResponse)
             {
-                if (paymentOperationResponse.AssetCode == "KIN" && double.Parse(paymentOperationResponse.Amount) < 10000)
+                if (paymentOperationResponse.AssetCode == "KIN" &&
+                    double.Parse(paymentOperationResponse.Amount) < 10000)
                 {
-                    _logger.Info($"{response.Type}-KIN\t{paymentOperationResponse.CreatedAt}, {paymentOperationResponse.Amount}, {paymentOperationResponse.Id}");
+                    _logger.Info(
+                        $"{response.Type}-KIN\t{paymentOperationResponse.CreatedAt}, {paymentOperationResponse.Amount}, {paymentOperationResponse.Id}");
                 }
             }
             else if (response is CreateAccountOperationResponse createAccountOperationResponse)
             {
-                _logger.Info($"{response.Type}\t{createAccountOperationResponse.CreatedAt}, {createAccountOperationResponse.StartingBalance}, {createAccountOperationResponse.Id}");
+                _logger.Info(
+                    $"{response.Type}\t{createAccountOperationResponse.CreatedAt}, {createAccountOperationResponse.StartingBalance}, {createAccountOperationResponse.Id}");
             }
 
             return operationRecord;
@@ -79,11 +81,12 @@ namespace kin_stellar_dashboard.Services.Impl
         {
             if (operationTypes.Length == 0)
             {
-                operationTypes = new[] { "payment", "create_account" };
+                operationTypes = new[] {"payment", "create_account"};
             }
 
             List<Task> tasks = operationTypes
-                .Select(operationType => _databaseService.Query($"'DELETE FROM {operationType} WHERE cursor_id = {cursorId}'"))
+                .Select(operationType =>
+                    _databaseService.Query($"'DELETE FROM {operationType} WHERE cursor_id = {cursorId}'"))
                 .Cast<Task>()
                 .ToList();
 

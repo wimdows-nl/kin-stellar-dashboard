@@ -4,11 +4,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace kin_stellar_dashboard.Services.Impl
 {
-
     public class DatabaseService : IDatabaseService
     {
         private readonly IConfigurationRoot _config;
         private readonly ILog _logger;
+
         public DatabaseService(IConfigurationRoot config)
         {
             _config = config;

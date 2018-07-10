@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace kin_stellar_dashboard
+﻿namespace kin_stellar_dashboard
 {
     internal class Program
     {
